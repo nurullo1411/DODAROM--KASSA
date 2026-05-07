@@ -9,9 +9,11 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
+    // Migratsiyalar uchun direct (non-pooling) ulanish kerak — PgBouncer ba'zi DDL ni qo'llamaydi.
+    // Lokal dev'da DATABASE_URL ishlaydi.
     url:
-      process.env["DATABASE_URL"] ??
       process.env["POSTGRES_URL_NON_POOLING"] ??
+      process.env["DATABASE_URL"] ??
       process.env["POSTGRES_URL"],
   },
 });
