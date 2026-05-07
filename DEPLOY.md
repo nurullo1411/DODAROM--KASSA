@@ -1,100 +1,120 @@
-# Vercel'ga deploy qilish — qadam-baqadam
+# Vercel'ga deploy — soddalashtirilgan yo'l
 
-Bu loyihani **Vercel** + **Neon Postgres** bilan internetga chiqarish uchun yo'l-yo'riq. Hammasi bepul tarif'da boshlanadi.
+Bu yo'lda **GitHub + Vercel** kerak (Neon alohida emas — Vercel ichidagi Postgres ishlatamiz).
 
-## 0. Hisoblar
+## 0. Loyiha holati
 
-Quyidagilar kerak (har biri 2-3 daqiqa, hammasini GitHub akkaunti bilan kirish bo'ladi):
+- ✅ Code git'da commit qilingan
+- ✅ Build script avtomatik DB sxemasini push qiladi
+- ✅ `POSTGRES_URL` va `DATABASE_URL` ikkalasi ham qo'llab-quvvatlanadi
 
-- [ ] [GitHub](https://github.com) akkaunt
-- [ ] [Neon](https://neon.tech) akkaunt — Postgres uchun
-- [ ] [Vercel](https://vercel.com) akkaunt — hosting
-
-## 1. Neon'da DB yaratish
-
-1. https://console.neon.tech ga kiring → **New Project**
-2. Sozlash:
-   - Project name: `dodorom-kassa`
-   - Postgres version: 16 (default)
-   - Region: **Frankfurt (eu-central-1)** — Toshkentga eng yaqini
-3. Yaratilgach, **Connection Details** sahifasi ochiladi
-4. **"Pooled connection"** ni tanlang (psql emas, Prisma uchun)
-5. Connection string ni nusxa oling. Bunaqa ko'rinadi:
-   ```
-   postgresql://neondb_owner:xxxxx@ep-xxxxx-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require
-   ```
-
-## 2. Lokal .env'ni yangilash va sxemani yuklash
-
-1. Loyiha papkasidagi `.env` faylini oching
-2. `DATABASE_URL=""` ga o'sha Connection string ni qo'ying:
-   ```
-   DATABASE_URL="postgresql://neondb_owner:xxxxx@..."
-   ```
-3. PowerShell'da loyiha papkasiga o'ting va sxemani Neon'ga yuboring:
-   ```powershell
-   npm run db:push
-   ```
-4. Lokal dev server'ni ishga tushiring:
-   ```powershell
-   npm run dev
-   ```
-5. Brauzerda http://localhost:3000 — `/setup` sahifasida admin yarating
-6. Hammasi ishlaganini tekshiring (login, tranzaksiya qo'shish, hisobot)
-
-## 3. GitHub'ga push qilish
-
-PowerShell'da loyiha papkasida:
-
-```powershell
-git init
-git add .
-git commit -m "Initial commit"
+Sizning **AUTH_SECRET** (production uchun):
+```
+uTSMLqu8QBegl99V3Xmu3PGiZR0FwZ18IeE8l8IR8dlIRm3-38A2LPEmmrkyWcD6
 ```
 
-Endi GitHub'da yangi repository yarating:
-- https://github.com/new
-- Repository name: `dodorom-kassa`
-- **Private** ni tanlang (xodimlar ma'lumotlari bo'ladi)
-- "Add README/license" — **belgilamang** (bizda allaqachon bor)
-- Create
+## 1. GitHub akkaunt yaratish (3 daqiqa)
 
-GitHub bergan ko'rsatmalarni nusxa oling, ular taxminan bunday:
+1. https://github.com/signup ga kiring
+2. Email, parol, username (masalan: `dodorom-kassa`) kiriting
+3. Email'ga kelgan kodni tasdiqlang
+4. Tarif: **Free** ni tanlang (Continue for free)
+
+## 2. GitHub'da repository yaratish
+
+1. https://github.com/new ga kiring
+2. **Repository name:** `dodorom-kassa`
+3. **Privacy:** **Private** (xodimlar ma'lumotlari bo'ladi)
+4. **Initialize this repository:** hech narsa belgilamang
+5. **Create repository** ni bosing
+6. Keyingi sahifada chiqadigan komandalarni nusxa oling — shunaqa ko'rinadi:
+   ```
+   git remote add origin https://github.com/SIZ/dodorom-kassa.git
+   git branch -M main
+   git push -u origin main
+   ```
+
+## 3. Lokal koddi GitHub'ga push qilish
+
+PowerShell'da loyiha papkasidan (yuqoridagilarni o'zingizning username bilan ishlating):
 
 ```powershell
+cd C:\Users\DODAROM\projects\dodorom-kassa
 git remote add origin https://github.com/SIZNING-USERNAME/dodorom-kassa.git
 git branch -M main
 git push -u origin main
 ```
 
-## 4. Vercel'ga ulash
+Birinchi push'da brauzer ochilib GitHub'ga kirishni so'raydi — tasdiqlang.
 
-1. https://vercel.com/new ga kiring
-2. **Import Git Repository** — GitHub'ni ulang (birinchi marta bo'lsa, ruxsat bering)
-3. `dodorom-kassa` repo'sini tanlang → **Import**
-4. **Configure Project** sahifasi:
-   - Framework Preset: **Next.js** (avtomatik aniqlanadi)
-   - Root Directory: `./` (default)
-   - **Environment Variables** ni kengaytiring va quyidagilarni qo'shing:
+## 4. Vercel akkaunt yaratish (1 daqiqa)
+
+1. https://vercel.com/signup ga kiring
+2. **"Continue with GitHub"** ni tanlang — alohida ro'yxatdan o'tish shart emas
+3. GitHub avtorizatsiyasini tasdiqlang
+4. Sizdan ism so'raydi → kiriting → Continue
+5. Plan: **Hobby** (bepul) ni tanlang
+
+## 5. Loyihani Vercel'ga import qilish
+
+1. Vercel dashboard'da **Add New → Project** ni bosing
+2. **Import Git Repository** ro'yxatida `dodorom-kassa` topilmasa, **Configure GitHub App** orqali Vercel'ga repo ko'rinishiga ruxsat bering
+3. `dodorom-kassa` yonidagi **Import** ni bosing
+
+**Configure Project** sahifasida:
+- Framework Preset: **Next.js** (avtomatik)
+- Root Directory: `./` (default)
+- Build / Output / Install: hech narsa o'zgartirmang
+- **Environment Variables** ni kengaytiring va qo'shing:
 
 | Nom | Qiymat |
 |---|---|
-| `DATABASE_URL` | Neon Connection string (yuqoridagidek) |
-| `AUTH_SECRET` | `.auth-secret-prod.txt` faylidagi qator |
+| `AUTH_SECRET` | `uTSMLqu8QBegl99V3Xmu3PGiZR0FwZ18IeE8l8IR8dlIRm3-38A2LPEmmrkyWcD6` |
 
-5. **Deploy** ni bosing
-6. 1-2 daqiqa kuting → "Congratulations! Your project has been deployed."
-7. Berilgan URL ni oching (masalan: `https://dodorom-kassa.vercel.app`)
+> ⚠️ DATABASE_URL ni hozir **qo'shmang** — Postgres'ni keyingi qadamda ulaymiz.
 
-## 5. Birinchi sinov
+5. **Deploy** tugmasini bosing
 
-- URL'ni telefon brauzerida ham ochib ko'ring
-- Chrome'da: menyu → "Add to Home Screen" — ilovani telefon ekraniga o'rnatadi (PWA)
-- Login qiling
-- Yangi tranzaksiya qo'shing
-- Excel'ga yuklab oling
+> ⚠️ Birinchi deploy **xato beradi** (DATABASE_URL hali yo'q) — bu normal. Postgres ulagandan keyin qayta deploy qilamiz.
 
-## 6. Xodim qo'shish
+## 6. Vercel Postgres (Neon) qo'shish
+
+1. Loyiha sahifasida yuqorida **Storage** tab'iga o'ting
+2. **Create Database** → **Neon (Postgres)** ni tanlang
+3. Sozlash:
+   - **Database name:** `dodorom-kassa-db` (yoki default qoldiring)
+   - **Region:** **Frankfurt (eu-central-1)** — Toshkentga eng yaqini
+   - **Plan:** Free
+4. **Create** ni bosing
+5. Keyingi sahifada **"Connect Project"** → tanlangan bo'lishi kerak → **Connect**
+6. Vercel avtomatik bir nechta env'larni qo'shadi: `DATABASE_URL`, `POSTGRES_URL`, va h.k.
+
+## 7. Qayta deploy qilish
+
+1. Project → **Deployments** tab
+2. Eng oxirgi (xato bergan) deploy yonidagi **... → Redeploy**
+3. **Use existing build cache:** belgilamang
+4. **Redeploy**
+5. 1-2 daqiqa kutib turing → ✓ Ready
+
+Bu deploy paytida `prisma db push` avtomatik ishlaydi va DB sxemasini yaratadi.
+
+## 8. Birinchi sinov
+
+1. Project sahifasida ko'k URL'ni bosing (masalan: `https://dodorom-kassa.vercel.app`)
+2. **`/setup`** sahifasi avtomatik ochiladi (chunki hali admin yo'q)
+3. Admin yarating: ism, email, parol
+4. Login qiling → Dashboard ko'rinadi
+5. Yangi tranzaksiya qo'shing
+6. Hisobotlar va Excel eksportni sinang
+
+## 9. Telefonga PWA o'rnatish
+
+Vercel URL'ni telefon Chrome'da oching:
+- Menu (uch nuqta) → **"Add to Home Screen"** yoki **"Install app"**
+- Ikonka paydo bo'ladi — tabiiy ilova kabi ishlaydi
+
+## 10. Xodim qo'shish
 
 1. Admin paneliga kiring → Foydalanuvchilar
 2. Yangi qo'shing: ism, email, rol (kassir/buxgalter), parol
@@ -103,25 +123,25 @@ git push -u origin main
 ## Custom domen ulash (ixtiyoriy)
 
 Agar `kassa.dodorom.uz` kabi shaxsiy domen kerak bo'lsa:
-1. Vercel project → Settings → Domains
-2. Domeningizni qo'shing
+1. Vercel project → Settings → Domains → Add
+2. Domeningizni yozing
 3. Vercel beradigan DNS yozuvlarini domain registrar'ga qo'shing
 4. 5-30 daqiqa ichida ulanadi
 
-## Yangilanish (kelajakda)
+## Yangilanish
 
-Keyinchalik kod o'zgartirsangiz:
-
+Keyinchalik kod o'zgartirsangiz, lokal'da:
 ```powershell
 git add .
-git commit -m "Description of changes"
+git commit -m "O'zgartirish izohi"
 git push
 ```
+Vercel avtomatik yangi deploy qiladi (build paytida sxema ham yangilanadi).
 
-Vercel avtomatik yangi deploy qiladi.
+## Muammolar
 
-## Muammo bo'lsa
+- **Build xato — `Environment variable not found: DATABASE_URL`:** Vercel Postgres'ni Connect Project orqali ulaganligingizni va keyin Redeploy qilganligingizni tekshiring.
+- **`/setup` 500 xato:** DB sxemasi yaratilmagan. Vercel Logs'da `prisma db push` xato bergan bo'lishi mumkin — Logs'ni o'qing.
+- **Login ishlamaydi:** AUTH_SECRET env'da to'g'ri yozilganmi tekshiring.
 
-- **Neon ulanmaydi:** Connection string'da `?sslmode=require` borligini tekshiring
-- **Vercel build xato:** Vercel logs'da `prisma generate` ishlamaganmi tekshiring
-- **Sxema mos kelmaydi:** lokal'da `npm run db:push` ni qayta ishlating
+Yordam kerak bo'lsa — xato xabarini yoki screenshot'ni yuboring.
