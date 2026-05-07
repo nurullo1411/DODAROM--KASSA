@@ -1,0 +1,69 @@
+// Prisma schema for Dodorom Kassa
+// Production: PostgreSQL (Neon, Supabase yoki Vercel Postgres)
+// Local dev: ham Postgres ishlatadi (DATABASE_URL .env'da)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         String // "admin" | "kassir" | "buxgalter"
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions Transaction[]
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  code      Int?     @unique
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+}
+
+model CashBox {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  currency  String // "UZS" | "USD" | "RUB"
+  kind      String // "cash" | "card" | "bank"
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id           String   @id @default(cuid())
+  date         DateTime
+  cashBoxId    String
+  departmentId String
+  type         String // "income" | "expense"
+  amount       BigInt
+  note         String?
+  createdById  String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cashBox    CashBox    @relation(fields: [cashBoxId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+  createdBy  User       @relation(fields: [createdById], references: [id])
+
+  @@index([date])
+  @@index([cashBoxId, date])
+  @@index([departmentId, date])
+}
