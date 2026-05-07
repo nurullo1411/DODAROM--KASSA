@@ -20,12 +20,10 @@ const DEFAULT_CASH_BOXES = [
   { name: "Dollar", currency: "USD", kind: "cash" },
 ];
 
-export type SetupResult = { ok: true } | { ok: false; error: string };
-
-export async function setupSystem(formData: FormData): Promise<SetupResult> {
+export async function setupSystem(formData: FormData): Promise<void> {
   const existing = await prisma.user.count();
   if (existing > 0) {
-    return { ok: false, error: "Tizim allaqachon o'rnatilgan" };
+    throw new Error("Tizim allaqachon o'rnatilgan");
   }
 
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -33,10 +31,7 @@ export async function setupSystem(formData: FormData): Promise<SetupResult> {
   const password = String(formData.get("password") ?? "");
 
   if (!email || !fullName || password.length < 6) {
-    return {
-      ok: false,
-      error: "To'liq ism, email va kamida 6 belgili parol kiriting",
-    };
+    throw new Error("To'liq ism, email va kamida 6 belgili parol kiriting");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
